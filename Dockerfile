@@ -38,10 +38,23 @@ libsasl2-modules-db \
 curl \
 wget
 
-#Copie et execution du script pour l'installation et l'initialisation de GLPI
-COPY init-glpi.sh /opt/
-RUN chmod +x /opt/init-glpi.sh
-ENTRYPOINT ["/opt/init-glpi.sh"]
+RUN cd /root/ \
+&& curl -L -s -o glpi.tgz https://github.com/glpi-project/glpi/releases/download/10.0.12/glpi-10.0.12.tgz \
+&& tar -xzf glpi.tgz -C /var/www/ \
+&& rm glpi.tgz \
+&& rm /etc/apache2/sites-enabled/*.conf \
+&& a2enmod rewrite
+
+COPY glpi_apache.conf /etc/apache2/sites-available/glpi.conf
+
+RUN ln -s /etc/apache2/sites-available/glpi.conf /etc/apache2/sites-enabled \
+&& sed -i 's,session.cookie_httponly =,session.cookie_httponly = on,g' /etc/php/8.2/apache2/php.ini \
+&& chown www-data:www-data /var/www/glpi -R
+
+COPY runapache.sh /opt/runapache.sh
+RUN chmod +x /opt/runapache.sh
+
+ENTRYPOINT [ "/opt/runapache.sh" ]
 
 #Exposition des ports
 EXPOSE 80 443
