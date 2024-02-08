@@ -1,9 +1,9 @@
-version: "3.3"
+version: "3.4"
 
 services:
 #MariaDB Container
   mariadb:
-    image: mariadb:10.7
+    image: mariadb:11.2
     container_name: mariadbtest
     hostname: mariadbtest
     env_file:
